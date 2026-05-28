@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SenRe — Kovaaks Tournament Organizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+JP:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- 大理石テクスチャ用オーバーレイ -->
+<div class="marble-veins"></div>
+
+<!-- カスタムカーソル（クロスヘア） -->
+<div class="cursor-cross" id="cursorCross" aria-hidden="true">
+  <div class="cc-h"></div>
+  <div class="cc-v"></div>
+  <div class="cc-ring"></div>
+  <div class="cc-dot"></div>
+</div>
+
+<!-- スクロール進捗 -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- ナビ -->
+<nav class="nav">
+  <div class="nav-logo">
+    <span class="logo-mark">◆</span> SenRe
+  </div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#schedule">Schedule</a></li>
+    <li><a href="#members">Members</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- ============== HERO ============== -->
+<section id="hero" class="section hero">
+  <div class="grid-bg" data-parallax="0.25"></div>
+  <div class="ornament" id="ornament">
+    <div class="o-ring"></div>
+    <div class="o-ring o-ring-2"></div>
+    <div class="o-dot"></div>
+  </div>
+
+  <div class="hero-meta">
+    <span class="tag">// KOVAAKS TOURNAMENT ORGANIZER</span>
+  </div>
+  <h1 class="hero-title" id="heroTitle" data-text="SenRe">SenRe</h1>
+  <p class="hero-sub">Aim. Compete. Elevate.</p>
+
+  <div class="hero-stats">
+    <div><b>04</b><span>TOURNAMENTS</span></div>
+    <div><b>120+</b><span>PLAYERS</span></div>
+    <div><b>2024</b><span>FOUNDED</span></div>
+  </div>
+
+  <p class="scroll-hint">SCROLL ↓</p>
+</section>
+
+<!-- ============== ABOUT ============== -->
+<section id="about" class="section about">
+  <span class="section-no">/ 01</span>
+  <h2 class="section-title reveal reveal-up">About SenRe</h2>
+  <div class="about-grid">
+    <p class="reveal reveal-up">
+      <b>SenRe（センレ）</b> は、エイムトレーナー <b>KovaaK's</b> を舞台にした
+      コミュニティ主導の大会オーガナイザーです。
+      初心者から上級者まで、誰もが自分の上達を実感できる場をつくることを目的に
+      シーズン制のトーナメントを主催しています。
+    </p>
+    <ul class="about-points">
+      <li class="reveal reveal-up"><span>01</span>定期的なKovaaks大会の開催</li>
+      <li class="reveal reveal-up"><span>02</span>シナリオ選定とレギュレーション設計</li>
+      <li class="reveal reveal-up"><span>03</span>結果の集計・ランキング運営</li>
+      <li class="reveal reveal-up"><span>04</span>プレイヤー同士の交流促進</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============== RESULTS (Sticky横スクロール) ============== -->
+<section id="results" class="pin-section">
+  <div class="pin-track">
+    <div class="pin-stage">
+      <div class="pin-head">
+        <span class="section-no">/ 02</span>
+        <h2 class="section-title">Past Results</h2>
+        <p class="pin-hint">▶ スクロールで横移動</p>
+      </div>
+      <div class="pin-panels" id="pinPanels">
+
+        <article class="result">
+          <header><span class="r-date">2024.08</span><span class="r-season">SEASON 01</span></header>
+          <h3>SenRe Open #1</h3>
+          <p class="r-desc">記念すべき第1回大会。Tile Frenzy系シナリオで構成。</p>
+          <dl class="r-podium">
+            <div><dt>1st</dt><dd>Player_A</dd></div>
+            <div><dt>2nd</dt><dd>Player_B</dd></div>
+            <div><dt>3rd</dt><dd>Player_C</dd></div>
+          </dl>
+          <span class="r-count">参加 32名</span>
+        </article>
+
+        <article class="result">
+          <header><span class="r-date">2024.11</span><span class="r-season">SEASON 01</span></header>
+          <h3>SenRe Cup #2</h3>
+          <p class="r-desc">Tracking特化レギュレーション。上位陣の僅差バトル。</p>
+          <dl class="r-podium">
+            <div><dt>1st</dt><dd>Player_D</dd></div>
+            <div><dt>2nd</dt><dd>Player_A</dd></div>
+            <div><dt>3rd</dt><dd>Player_E</dd></div>
+          </dl>
+          <span class="r-count">参加 41名</span>
+        </article>
+
+        <article class="result">
+          <header><span class="r-date">2025.03</span><span class="r-season">SEASON 02</span></header>
+          <h3>SenRe Spring Invitational</h3>
+          <p class="r-desc">招待制8名のショーマッチ大会。ライブ配信あり。</p>
+          <dl class="r-podium">
+            <div><dt>1st</dt><dd>Player_F</dd></div>
+            <div><dt>2nd</dt><dd>Player_D</dd></div>
+            <div><dt>3rd</dt><dd>Player_A</dd></div>
+          </dl>
+          <span class="r-count">招待 8名</span>
+        </article>
+
+        <article class="result">
+          <header><span class="r-date">2025.10</span><span class="r-season">SEASON 02</span></header>
+          <h3>SenRe Autumn Open</h3>
+          <p class="r-desc">過去最大規模。Switching/Tracking混合ルール。</p>
+          <dl class="r-podium">
+            <div><dt>1st</dt><dd>Player_G</dd></div>
+            <div><dt>2nd</dt><dd>Player_F</dd></div>
+            <div><dt>3rd</dt><dd>Player_D</dd></div>
+          </dl>
+          <span class="r-count">参加 67名</span>
+        </article>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SCHEDULE ============== -->
+<section id="schedule" class="section schedule">
+  <span class="section-no">/ 03</span>
+  <h2 class="section-title reveal reveal-up">Upcoming Schedule</h2>
+
+  <ol class="timeline">
+    <li class="reveal reveal-left">
+      <div class="tl-date">2026.06.14 <span>SUN</span></div>
+      <div class="tl-body">
+        <h3>SenRe Summer Qualifier</h3>
+        <p>夏季シーズンの予選大会。オープン参加。Tracking系3シナリオ。</p>
+        <span class="tl-status open">OPEN</span>
+      </div>
+    </li>
+    <li class="reveal reveal-left">
+      <div class="tl-date">2026.07.20 <span>MON</span></div>
+      <div class="tl-body">
+        <h3>SenRe Summer Finals</h3>
+        <p>予選を勝ち抜いた16名による決勝。Twitch配信予定。</p>
+        <span class="tl-status soon">SOON</span>
+      </div>
+    </li>
+    <li class="reveal reveal-left">
+      <div class="tl-date">2026.10.??</div>
+      <div class="tl-body">
+        <h3>SenRe Autumn Open #2</h3>
+        <p>秋の定期大会。レギュレーションは追って告知。</p>
+        <span class="tl-status tba">TBA</span>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<!-- ============== MEMBERS ============== -->
+<section id="members" class="section members">
+  <span class="section-no">/ 04</span>
+  <h2 class="section-title reveal reveal-up">Members</h2>
+  <div class="member-grid">
+    <div class="member reveal reveal-up">
+      <div class="m-avatar">▲</div>
+      <h3>Founder_X</h3>
+      <p class="m-role">Founder / Organizer</p>
+      <p class="m-bio">SenRe創設者。レギュレーション設計と全体運営。</p>
+    </div>
+    <div class="member reveal reveal-up">
+      <div class="m-avatar">◆</div>
+      <h3>Caster_Y</h3>
+      <p class="m-role">Caster / Streaming</p>
+      <p class="m-bio">大会配信・実況。Twitchでの放送を担当。</p>
+    </div>
+    <div class="member reveal reveal-up">
+      <div class="m-avatar">●</div>
+      <h3>Analyst_Z</h3>
+      <p class="m-role">Stats / Ranking</p>
+      <p class="m-bio">スコア集計、シナリオ難易度評価、ランキング管理。</p>
+    </div>
+    <div class="member reveal reveal-up">
+      <div class="m-avatar">■</div>
+      <h3>Design_W</h3>
+      <p class="m-role">Design / Web</p>
+      <p class="m-bio">ロゴ・サムネ・本サイトを含むビジュアル全般。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CONTACT ============== -->
+<section id="contact" class="section contact">
+  <span class="section-no">/ 05</span>
+  <h2 class="section-title reveal reveal-up">Contact</h2>
+
+  <div class="contact-grid">
+    <p class="contact-lead reveal reveal-up">
+      大会への参加申込、取材・配信のご相談、その他お問い合わせは
+      下記メールアドレス宛にご連絡ください。<br>
+      内容を確認のうえ、運営より順次ご返信いたします。
+    </p>
+
+    <div class="contact-card reveal reveal-up">
+      <span class="contact-label">// EMAIL</span>
+      <a class="contact-mail" href="mailto:hogehoge@gmail.com">hogehoge@gmail.com</a>
+      <button class="contact-copy" type="button" data-copy="hogehoge@gmail.com">
+        <span class="cc-label">COPY</span>
+      </button>
+      <p class="contact-note">
+        ※ 返信までに数日いただく場合があります。<br>
+        ※ 件名に <b>[SenRe]</b> を入れていただくとスムーズです。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="f-logo">▲ SenRe</div>
+    <p class="f-copy">© 2026 SenRe — Kovaaks Tournament Organizer</p>
+    <ul class="f-links">
+      <li><a href="#">X / Twitter</a></li>
+      <li><a href="#">Discord</a></li>
+      <li><a href="#">Twitch</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
