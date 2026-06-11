@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SenRe — Gimmick Demo / ギミック試作</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+JP:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+/* ===== 本サイトと共通のトークン ===== */
+:root{
+  --bg-0:#f7f9fc; --bg-1:#eef1f6; --bg-2:#ffffff;
+  --fg:#1a1c22; --fg-soft:#2a2d35; --fg-dim:#767a85;
+  --accent:#9aa3b2; --accent-2:#5a6172;
+  --line:rgba(26,28,34,.10); --line-soft:rgba(26,28,34,.05);
+  --serif:"Cormorant Garamond","Noto Serif JP",Georgia,serif;
+  --sans:"Inter","Hiragino Sans","Yu Gothic",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:var(--sans);font-weight:300;color:var(--fg);background:var(--bg-0);
+  line-height:1.7;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 15%,rgba(180,200,225,.18),transparent 55%),
+    radial-gradient(ellipse at 85% 80%,rgba(200,190,220,.14),transparent 60%);
+}
+.wrap{max-width:1100px;margin:0 auto;padding:80px 48px 140px;}
+.demo-head{margin-bottom:80px;}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;}
+.demo-head h1{font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(48px,9vw,110px);letter-spacing:-.02em;line-height:1;margin:14px 0 18px;}
+.demo-head p{color:var(--fg-dim);max-width:560px;}
+
+/* セクション共通 */
+.demo{padding:70px 0;border-top:1px solid var(--line);}
+.demo-no{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;}
+.demo h2{font-family:var(--serif);font-weight:400;font-size:clamp(30px,5vw,52px);letter-spacing:-.01em;margin:10px 0 6px;}
+.demo .lead{color:var(--fg-dim);font-size:14px;margin-bottom:40px;max-width:620px;}
+.demo .lead b{color:var(--fg-soft);font-weight:500;}
+.stage{display:flex;flex-wrap:wrap;gap:28px;align-items:center;}
+
+/* カード（共通の見た目） */
+.card{
+  background:var(--bg-2);border:1px solid var(--line);padding:32px 28px;
+  width:300px;position:relative;
+}
+.card::before{content:"";position:absolute;top:16px;left:28px;right:28px;height:1px;background:var(--accent);opacity:.6;}
+.card .c-no{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--fg-dim);text-transform:uppercase;margin:10px 0 18px;}
+.card h3{font-family:var(--serif);font-weight:500;font-size:26px;margin-bottom:8px;}
+.card p{font-size:13px;color:var(--fg-dim);}
+
+/* ボタン共通 */
+.btn{
+  display:inline-block;background:transparent;border:1px solid var(--line);
+  padding:14px 26px;font-family:var(--mono);font-size:11px;letter-spacing:.3em;
+  color:var(--fg-soft);text-transform:uppercase;cursor:pointer;
+  transition:border-color .25s,color .25s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-2);}
+
+/* ============================================================
+   ① マグネティック & 3D ティルト
+   ============================================================ */
+.magnetic{will-change:transform;transition:transform .25s cubic-bezier(.2,.7,.2,1);}
+.tilt{
+  transform-style:preserve-3d;will-change:transform;
+  transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s ease;
+}
+.tilt > *{transform:translateZ(40px);}
+.tilt::before{transform:translateZ(60px);}
+.tilt.is-tilting{box-shadow:0 30px 60px rgba(29,27,24,.12);}
+.tilt-glare{
+  position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.55),transparent 45%);
+  transition:opacity .3s ease;mix-blend-mode:overlay;
+}
+.tilt.is-tilting .tilt-glare{opacity:1;}
+
+/* ============================================================
+   ② テキストスクランブル / デコード
+   ============================================================ */
+.scramble{font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:clamp(40px,8vw,84px);letter-spacing:-.02em;line-height:1;cursor:pointer;display:inline-block;}
+.scramble .glitch{color:var(--accent);font-style:normal;}
+.scramble-hint{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--fg-dim);text-transform:uppercase;margin-top:18px;}
+
+/* ============================================================
+   ③ エイムターゲット（イースターエッグ）
+   ============================================================ */
+.aim-toggle{margin-bottom:24px;}
+.aim-hud{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--fg-dim);
+  text-transform:uppercase;margin-top:18px;display:flex;gap:28px;
+}
+.aim-hud b{color:var(--accent-2);font-weight:500;}
+.aim-target{
+  position:fixed;width:46px;height:46px;z-index:9000;cursor:pointer;
+  transform:translate(-50%,-50%) scale(0);animation:targetIn .25s cubic-bezier(.2,.7,.2,1) forwards;
+}
+@keyframes targetIn{to{transform:translate(-50%,-50%) scale(1);}}
+.aim-target .ring{position:absolute;inset:0;border:2px solid var(--accent-2);border-radius:50%;opacity:.85;}
+.aim-target .ring.r2{inset:30%;opacity:.6;}
+.aim-target .dot{position:absolute;top:50%;left:50%;width:5px;height:5px;background:var(--accent-2);border-radius:50%;transform:translate(-50%,-50%);}
+.aim-target.is-hit{animation:targetHit .3s ease forwards;pointer-events:none;}
+@keyframes targetHit{to{transform:translate(-50%,-50%) scale(1.8);opacity:0;}}
+.aim-pop{
+  position:fixed;z-index:9001;font-family:var(--mono);font-size:13px;font-weight:500;
+  color:var(--accent-2);pointer-events:none;transform:translate(-50%,-50%);
+  animation:popUp .6s ease forwards;
+}
+@keyframes popUp{to{transform:translate(-50%,-180%);opacity:0;}}
+
+/* ============================================================
+   ④ スポットライト & 数字カウントアップ
+   ============================================================ */
+.spotlight-stage{
+  position:relative;width:100%;padding:60px 40px;background:var(--bg-1);
+  border:1px solid var(--line);overflow:hidden;
+}
+.spot-veins{
+  position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;
+  background-image:
+    repeating-linear-gradient(115deg,transparent 0,transparent 26px,rgba(80,100,130,.18) 26px,rgba(80,100,130,.18) 27px,transparent 27px,transparent 64px),
+    repeating-linear-gradient(60deg,transparent 0,transparent 40px,rgba(120,135,165,.14) 40px,rgba(120,135,165,.14) 41px,transparent 41px,transparent 88px);
+  -webkit-mask-image:radial-gradient(circle 160px at var(--mx,50%) var(--my,50%),#000 0%,transparent 70%);
+  mask-image:radial-gradient(circle 160px at var(--mx,50%) var(--my,50%),#000 0%,transparent 70%);
+}
+.spotlight-stage:hover .spot-veins{opacity:1;}
+.spot-stats{position:relative;z-index:1;display:flex;gap:64px;flex-wrap:wrap;}
+.spot-stats > div{padding-left:18px;border-left:1px solid var(--accent);}
+.spot-stats b{display:block;font-family:var(--serif);font-weight:500;font-size:54px;line-height:1;margin-bottom:8px;}
+.spot-stats span{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--fg-dim);text-transform:uppercase;}
+.spot-hint{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--fg-dim);text-transform:uppercase;margin-top:26px;position:relative;z-index:1;}
+
+.foot{margin-top:80px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--fg-dim);text-transform:uppercase;border-top:1px solid var(--line);padding-top:30px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="demo-head">
+    <span class="kicker">// SENRE — GIMMICK PROTOTYPE</span>
+    <h1>Gimmicks</h1>
+    <p>本サイトに導入候補のギミック4種を、同じカラー・フォントで試作したサンプルです。実際に触って気に入ったものを教えてください。本番（index.html）へ統合します。</p>
+  </header>
+
+  <!-- ① マグネティック & 3D ティルト -->
+  <section class="demo">
+    <span class="demo-no">/ 01</span>
+    <h2>Magnetic &amp; 3D Tilt</h2>
+    <p class="lead"><b>カーソルを近づける</b>とボタンが吸い寄せられ、<b>カードはカーソル方向へ立体的に傾き</b>ます。ハイライトの光沢も追従。Awwwards系の定番で上品に映えます。</p>
+    <div class="stage">
+      <div class="card tilt" data-tilt>
+        <div class="tilt-glare"></div>
+        <div class="c-no">Season 02 — #4</div>
+        <h3>SenRe Autumn Open</h3>
+        <p>カーソルを乗せて、ゆっくり動かしてみてください。カードが奥行きを持って傾きます。</p>
+      </div>
+      <button class="btn magnetic" data-magnetic>Join Tournament</button>
+      <button class="btn magnetic" data-magnetic>Copy Email</button>
+    </div>
+  </section>
+
+  <!-- ② テキストスクランブル -->
+  <section class="demo">
+    <span class="demo-no">/ 02</span>
+    <h2>Text Scramble / Decode</h2>
+    <p class="lead">見出しが<b>ランダムな記号からカチャカチャと「解読」</b>されて出現します。下の文字に<b>ホバー</b>すると再生。ゲーミング／テック感が出ます。</p>
+    <div class="scramble" data-scramble="SenRe">SenRe</div>
+    <div class="scramble" data-scramble="Aim. Compete. Elevate." style="font-size:clamp(24px,4vw,44px);margin-top:18px;">Aim. Compete. Elevate.</div>
+    <p class="scramble-hint">▶ Hover to decode</p>
+  </section>
+
+  <!-- ③ エイムターゲット -->
+  <section class="demo">
+    <span class="demo-no">/ 03</span>
+    <h2>Aim Target — Easter Egg</h2>
+    <p class="lead">KovaaK'sらしい遊び心。<b>「START」を押すと画面に的が出現</b>し、クリックで撃ち抜くとスコアが加算されます。クロスヘアカーソルと連動するイースターエッグ。</p>
+    <button class="btn aim-toggle" id="aimToggle">▶ Start Aim Mode</button>
+    <div class="aim-hud">
+      <span>SCORE <b id="aimScore">0</b></span>
+      <span>HITS <b id="aimHits">0</b></span>
+      <span>BEST <b id="aimBest">0</b></span>
+    </div>
+  </section>
+
+  <!-- ④ スポットライト & カウントアップ -->
+  <section class="demo">
+    <span class="demo-no">/ 04</span>
+    <h2>Spotlight &amp; Count-up</h2>
+    <p class="lead"><b>エリアにカーソルを乗せる</b>と、その周囲だけ大理石の脈が浮かび上がるスポットライト。数字は<b>画面に入ると0からカウントアップ</b>します（スクロールして再生 / ボタンで再実行）。</p>
+    <div class="spotlight-stage" id="spotStage">
+      <div class="spot-veins" id="spotVeins"></div>
+      <div class="spot-stats">
+        <div><b class="countup" data-to="4" data-pad="2">0</b><span>Tournaments</span></div>
+        <div><b class="countup" data-to="120" data-suffix="+">0</b><span>Players</span></div>
+        <div><b class="countup" data-to="2024">0</b><span>Founded</span></div>
+      </div>
+      <p class="spot-hint">// Hover to reveal marble veins</p>
+    </div>
+    <button class="btn" id="replayCount" style="margin-top:24px;">↻ Replay Count-up</button>
+  </section>
+
+  <p class="foot">© 2026 SenRe — Prototype. お好みのギミック番号（複数可）を教えてください。</p>
+
+</div>
+
+<script>
+/* ============================================================
+   ① マグネティック & 3D ティルト
+   ============================================================ */
+const STRENGTH_MAG = 0.4;   // 吸着の強さ
+document.querySelectorAll('[data-magnetic]').forEach(el=>{
+  el.addEventListener('mousemove', e=>{
+    const r = el.getBoundingClientRect();
+    const x = e.clientX - (r.left + r.width/2);
+    const y = e.clientY - (r.top + r.height/2);
+    el.style.transform = `translate(${x*STRENGTH_MAG}px, ${y*STRENGTH_MAG}px)`;
+  });
+  el.addEventListener('mouseleave', ()=> el.style.transform = 'translate(0,0)');
+});
+
+const MAX_TILT = 10; // deg
+document.querySelectorAll('[data-tilt]').forEach(card=>{
+  card.addEventListener('mousemove', e=>{
+    const r = card.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;   // 0..1
+    const py = (e.clientY - r.top) / r.height;   // 0..1
+    const rx = (0.5 - py) * MAX_TILT * 2;
+    const ry = (px - 0.5) * MAX_TILT * 2;
+    card.classList.add('is-tilting');
+    card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    const glare = card.querySelector('.tilt-glare');
+    if(glare){ glare.style.setProperty('--gx', px*100+'%'); glare.style.setProperty('--gy', py*100+'%'); }
+  });
+  card.addEventListener('mouseleave', ()=>{
+    card.classList.remove('is-tilting');
+    card.style.transform = 'perspective(800px) rotateX(0) rotateY(0)';
+  });
+});
+
+/* ============================================================
+   ② テキストスクランブル
+   ============================================================ */
+const SCRAMBLE_CHARS = '!<>-_\\/[]{}—=+*^?#________ABCDEFアイウエオ0123456789';
+function scrambleTo(el, finalText){
+  let frame = 0;
+  const queue = [];
+  const old = el.dataset._cur || '';
+  const len = Math.max(old.length, finalText.length);
+  for(let i=0;i<len;i++){
+    const from = old[i] || '';
+    const to = finalText[i] || '';
+    const start = Math.floor(Math.random()*20);
+    const end = start + Math.floor(Math.random()*20) + 10;
+    queue.push({from,to,start,end,char:''});
+  }
+  cancelAnimationFrame(el._raf);
+  const update = ()=>{
+    let out = '', done = 0;
+    for(const q of queue){
+      if(frame >= q.end){ done++; out += q.to; }
+      else if(frame >= q.start){
+        if(!q.char || Math.random() < 0.28) q.char = SCRAMBLE_CHARS[Math.floor(Math.random()*SCRAMBLE_CHARS.length)];
+        out += `<span class="glitch">${q.char}</span>`;
+      } else { out += q.from; }
+    }
+    el.innerHTML = out;
+    if(done < queue.length){ frame++; el._raf = requestAnimationFrame(update); }
+    else { el.textContent = finalText; el.dataset._cur = finalText; }
+  };
+  update();
+}
+document.querySelectorAll('[data-scramble]').forEach(el=>{
+  el.dataset._cur = el.textContent;
+  const run = ()=> scrambleTo(el, el.dataset.scramble);
+  el.addEventListener('mouseenter', run);
+  // 初回ロードで一度自動再生
+  window.addEventListener('load', ()=> setTimeout(run, 300), {once:true});
+});
+
+/* ============================================================
+   ③ エイムターゲット（イースターエッグ）
+   ============================================================ */
+const aimToggle = document.getElementById('aimToggle');
+const aimScoreEl = document.getElementById('aimScore');
+const aimHitsEl  = document.getElementById('aimHits');
+const aimBestEl  = document.getElementById('aimBest');
+let aimOn = false, aimScore = 0, aimHits = 0, aimBest = 0, aimTimer = null;
+
+function spawnTarget(){
+  if(!aimOn) return;
+  const t = document.createElement('div');
+  t.className = 'aim-target';
+  const pad = 80;
+  const x = pad + Math.random()*(window.innerWidth - pad*2);
+  const y = pad + Math.random()*(window.innerHeight - pad*2);
+  t.style.left = x+'px'; t.style.top = y+'px';
+  t.innerHTML = '<div class="ring"></div><div class="ring r2"></div><div class="dot"></div>';
+  const born = performance.now();
+  const life = setTimeout(()=>{ t.remove(); }, 1600); // 外すと消える
+  t.addEventListener('click', ()=>{
+    clearTimeout(life);
+    const dt = performance.now() - born;
+    const pts = Math.max(10, 100 - Math.floor(dt/20)); // 速いほど高得点
+    aimScore += pts; aimHits++;
+    aimScoreEl.textContent = aimScore;
+    aimHitsEl.textContent = aimHits;
+    aimBest = Math.max(aimBest, pts); aimBestEl.textContent = aimBest;
+    t.classList.add('is-hit');
+    const pop = document.createElement('div');
+    pop.className = 'aim-pop'; pop.textContent = '+'+pts;
+    pop.style.left = t.style.left; pop.style.top = t.style.top;
+    document.body.appendChild(pop);
+    setTimeout(()=>{ t.remove(); pop.remove(); }, 600);
+  });
+  document.body.appendChild(t);
+}
+aimToggle.addEventListener('click', ()=>{
+  aimOn = !aimOn;
+  aimToggle.textContent = aimOn ? '■ Stop Aim Mode' : '▶ Start Aim Mode';
+  if(aimOn){
+    aimScore = aimHits = 0; aimScoreEl.textContent = '0'; aimHitsEl.textContent = '0';
+    spawnTarget();
+    aimTimer = setInterval(spawnTarget, 900);
+  } else {
+    clearInterval(aimTimer);
+    document.querySelectorAll('.aim-target').forEach(t=>t.remove());
+  }
+});
+
+/* ============================================================
+   ④ スポットライト & カウントアップ
+   ============================================================ */
+const spotStage = document.getElementById('spotStage');
+const spotVeins = document.getElementById('spotVeins');
+spotStage.addEventListener('mousemove', e=>{
+  const r = spotStage.getBoundingClientRect();
+  spotVeins.style.setProperty('--mx', (e.clientX-r.left)+'px');
+  spotVeins.style.setProperty('--my', (e.clientY-r.top)+'px');
+});
+
+function animateCount(el){
+  const to = parseFloat(el.dataset.to);
+  const pad = parseInt(el.dataset.pad||'0',10);
+  const suffix = el.dataset.suffix || '';
+  const dur = 1400;
+  let startT = null;
+  const ease = t => 1 - Math.pow(1-t, 3);
+  function step(ts){
+    if(startT===null) startT = ts;
+    const p = Math.min((ts-startT)/dur, 1);
+    let v = Math.floor(ease(p)*to);
+    let s = pad ? String(v).padStart(pad,'0') : String(v);
+    el.textContent = s + suffix;
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+const countEls = document.querySelectorAll('.countup');
+const countObs = new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{ if(en.isIntersecting){ animateCount(en.target); countObs.unobserve(en.target); } });
+},{threshold:.5});
+countEls.forEach(el=>countObs.observe(el));
+document.getElementById('replayCount').addEventListener('click', ()=>{
+  countEls.forEach(el=>{ el.textContent='0'; animateCount(el); });
+});
+</script>
+</body>
+</html>
