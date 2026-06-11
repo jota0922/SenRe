@@ -526,14 +526,33 @@ ul, ol { list-style: none; }
 
 /* ============== MEMBERS ============== */
 .members { background: transparent; }
+/* 横スクロール：カードを一列に並べ、はみ出した分は横スクロール／スワイプで見る */
 .member-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  display: flex;
   gap: 28px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;   /* カード単位でピタッと止まる */
+  /* 上下の余白：ホバーで浮くカードと影が overflow で見切れる／縦スクロールが出るのを防ぐ */
+  padding: 14px 0 22px;
+  /* スクロールバーの装飾（テーマに合わせたシルバーグレー） */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+.member-grid::-webkit-scrollbar {
+  height: 6px;
+}
+.member-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+.member-grid::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 999px;
 }
 /* メンバーカード：アイコン＋名前。カード全体がXプロフィールへのリンク */
 .member-x {
   position: relative;
+  flex: 0 0 240px;          /* 幅を固定して折り返さない */
+  scroll-snap-align: start; /* スクロール時にカード先頭で止まる */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -580,6 +599,35 @@ ul, ol { list-style: none; }
   line-height: 1;
 }
 
+/* 立ち位置（役割）バッジ：アイコンと名前の間に表示する小さなピル */
+.mx-role {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: var(--fg-dim);
+  background: var(--bg-1);
+  transition: border-color .4s ease, color .4s ease, background .4s ease;
+}
+.member-x:hover .mx-role {
+  border-color: var(--accent);
+  color: var(--fg);
+}
+/* 主催は強調表示（深いスチールグレーで塗り） */
+.mx-role-lead {
+  border-color: var(--accent-2);
+  background: var(--accent-2);
+  color: var(--bg-2);
+}
+.member-x:hover .mx-role-lead {
+  border-color: var(--accent-2);
+  color: var(--bg-2);
+}
+
 .mx-name {
   font-family: var(--serif);
   font-weight: 500;
@@ -612,6 +660,12 @@ ul, ol { list-style: none; }
 .member-grid .member-x:nth-child(2) { --delay: .1s; }
 .member-grid .member-x:nth-child(3) { --delay: .2s; }
 .member-grid .member-x:nth-child(4) { --delay: .3s; }
+.member-grid .member-x:nth-child(5) { --delay: .4s; }
+.member-grid .member-x:nth-child(6) { --delay: .5s; }
+.member-grid .member-x:nth-child(7) { --delay: .6s; }
+.member-grid .member-x:nth-child(8) { --delay: .7s; }
+/* 9枚目以降は遅延が長くなりすぎないよう .8s で頭打ち */
+.member-grid .member-x:nth-child(n+9) { --delay: .8s; }
 
 /* ============== CONTACT ============== */
 .contact { background: transparent; }
