@@ -182,7 +182,105 @@ window.addEventListener('load', () => {
 });
 
 // =========================================
-// 10. Contact : メールアドレスのコピー
+// 11. Members : 手動・無限ループ・カルーセル
+//    自動では動かず、ドラッグ／スワイプ／ホイールで送る。
+//    オリジナル1セットの前後に複製セットを置いて計3セットにし、
+//    端（左右の複製領域）へ入ったらスクロール位置を1セットぶん
+//    巻き戻す/送る。複製は同一なので継ぎ目なく無限に周回できる。
+//    複製カードは支援技術・キーボード操作の重複を避けるため
+//    aria-hidden かつフォーカス不可にし、Reveal も無効化する。
+// =========================================
+const memberViewport = document.querySelector('.member-grid');
+const memberTrack = document.querySelector('.member-track');
+if (memberViewport && memberTrack) {
+  const originals = Array.from(memberTrack.children);
+
+  const makeClone = (node) => {
+    const clone = node.cloneNode(true);
+    clone.classList.remove('reveal', 'reveal-up'); // 複製は最初から表示
+    clone.classList.add('is-clone');
+    clone.setAttribute('aria-hidden', 'true');
+    clone.setAttribute('tabindex', '-1');
+    clone.querySelectorAll('a, button, [tabindex]')
+         .forEach(el => el.setAttribute('tabindex', '-1'));
+    return clone;
+  };
+
+  // 前後に複製セットを1つずつ追加 → [複製][オリジナル][複製] の3セット
+  originals.map(makeClone).reverse()
+           .forEach(c => memberTrack.insertBefore(c, memberTrack.firstChild));
+  originals.map(makeClone)
+           .forEach(c => memberTrack.appendChild(c));
+
+  // 1セットの幅（カード幅＋間隔 × 枚数）を実測
+  const setWidth = () => {
+    const styles = getComputedStyle(memberTrack);
+    const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+    return (originals[0].getBoundingClientRect().width + gap) * originals.length;
+  };
+
+  // 中央（オリジナル）セットの先頭から開始
+  let unit = setWidth();
+  memberViewport.scrollLeft = unit;
+
+  // 端の複製領域に入ったら1セットぶん巻き戻す/送る（同一内容なので継ぎ目なし）
+  const normalize = () => {
+    if (!unit) return;
+    if (memberViewport.scrollLeft < unit * 0.5) {
+      memberViewport.scrollLeft += unit;
+    } else if (memberViewport.scrollLeft > unit * 1.5) {
+      memberViewport.scrollLeft -= unit;
+    }
+  };
+  memberViewport.addEventListener('scroll', normalize, { passive: true });
+
+  // 幅が変わったら比率を保ったまま再配置
+  window.addEventListener('resize', () => {
+    const ratio = unit ? memberViewport.scrollLeft / unit : 1;
+    unit = setWidth();
+    memberViewport.scrollLeft = ratio * unit;
+  });
+
+  // マウスはドラッグで送る（タッチ／ホイールはブラウザのネイティブ挙動に任せる）
+  //   端での巻き戻し（normalize）と競合しないよう、絶対位置ではなく
+  //   前フレームからの相対移動量でスクロールを進める。
+  let dragging = false, lastX = 0, moved = 0;
+  memberViewport.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    dragging = true;
+    moved = 0;
+    lastX = e.clientX;
+    memberViewport.classList.add('is-dragging');
+    memberViewport.setPointerCapture(e.pointerId);
+  });
+  memberViewport.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    lastX = e.clientX;
+    moved += Math.abs(dx);
+    memberViewport.scrollLeft -= dx;
+  });
+  const endDrag = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    memberViewport.classList.remove('is-dragging');
+    try { memberViewport.releasePointerCapture(e.pointerId); } catch {}
+  };
+  memberViewport.addEventListener('pointerup', endDrag);
+  memberViewport.addEventListener('pointercancel', endDrag);
+
+  // ドラッグ後の誤クリック（リンク遷移）を抑制
+  memberTrack.addEventListener('click', (e) => {
+    if (moved > 6) {
+      e.preventDefault();
+      e.stopPropagation();
+      moved = 0;
+    }
+  }, true);
+}
+
+// =========================================
+// 12. Contact : メールアドレスのコピー
 // =========================================
 document.querySelectorAll('.contact-copy').forEach(btn => {
   btn.addEventListener('click', async () => {

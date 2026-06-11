@@ -526,33 +526,43 @@ ul, ol { list-style: none; }
 
 /* ============== MEMBERS ============== */
 .members { background: transparent; }
-/* 横スクロール：カードを一列に並べ、はみ出した分は横スクロール／スワイプで見る */
+/* 手動・無限ループ・カルーセル
+   .member-grid … スクロール容器（ドラッグ／スワイプ／ホイールで送る）
+   .member-track … カードを横一列に並べた帯。script.js が前後に複製セットを
+                   足し、端まで来たらスクロール位置を1セットぶん巻き戻す/送る
+                   ことで「8枚目の右に1枚目」が途切れず続く円環スクロールになる。 */
 .member-grid {
-  display: flex;
-  gap: 28px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;   /* カード単位でピタッと止まる */
-  /* 上下の余白：ホバーで浮くカードと影が overflow で見切れる／縦スクロールが出るのを防ぐ */
-  padding: 14px 0 22px;
-  /* スクロールバーの装飾（テーマに合わせたシルバーグレー） */
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent) transparent;
+  overflow-y: hidden;
+  /* 上下の余白：ホバーで浮くカードと影が overflow で見切れないように確保 */
+  padding: 24px 0 28px;
+  /* ドラッグ操作主体なのでスクロールバーは隠す */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* 旧Edge/IE */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain; /* 端での横バウンス・ページ送りを抑制 */
 }
-.member-grid::-webkit-scrollbar {
-  height: 6px;
+.member-grid::-webkit-scrollbar { display: none; }   /* Chrome / Safari */
+
+.member-track {
+  /* カード寸法の単一管理（.member-x の幅もこの変数を参照） */
+  --card-w: 240px;
+  --card-gap: 28px;
+  --card-count: 8;        /* オリジナル枚数。枚数を変えたらここも更新 */
+
+  display: flex;
+  gap: var(--card-gap);
+  width: max-content;     /* カードぶん横に伸ばす */
 }
-.member-grid::-webkit-scrollbar-track {
-  background: transparent;
-}
-.member-grid::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 999px;
+/* ドラッグ中はテキスト選択を無効化して掴み心地をよくする */
+.member-grid.is-dragging,
+.member-grid.is-dragging .member-track {
+  user-select: none;
 }
 /* メンバーカード：アイコン＋名前。カード全体がXプロフィールへのリンク */
 .member-x {
   position: relative;
-  flex: 0 0 240px;          /* 幅を固定して折り返さない */
-  scroll-snap-align: start; /* スクロール時にカード先頭で止まる */
+  flex: 0 0 var(--card-w, 240px);   /* 幅を固定して折り返さない */
   display: flex;
   flex-direction: column;
   align-items: center;
