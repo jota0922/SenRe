@@ -531,49 +531,87 @@ ul, ol { list-style: none; }
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 28px;
 }
-.member {
+/* メンバーカード：アイコン＋名前。カード全体がXプロフィールへのリンク */
+.member-x {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   padding: 40px 28px;
   background: var(--bg-2);
   border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
   transition: transform .4s ease, border-color .4s ease, box-shadow .4s ease;
 }
-.member:hover {
+.member-x:hover {
   transform: translateY(-8px);
   border-color: var(--accent);
   box-shadow: 0 20px 50px rgba(29,27,24,0.08);
 }
-.m-avatar {
-  font-size: 38px;
-  color: var(--accent);
-  margin-bottom: 22px;
+
+/* アイコン（プロフィール画像）。画像が無い場合は記号フォールバックを表示 */
+.mx-avatar {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .4s ease;
 }
-.member h3 {
+.member-x:hover .mx-avatar { border-color: var(--accent); }
+.mx-avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mx-fallback {
+  font-size: 34px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.mx-name {
   font-family: var(--serif);
   font-weight: 500;
   font-size: 24px;
-  margin-bottom: 6px;
   letter-spacing: -.005em;
+  color: var(--fg);
 }
-.m-role {
+
+/* X（旧Twitter）ハンドル：Xロゴ＋@ID。ホバーで色が締まる */
+.mx-handle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: .3em;
-  color: var(--accent);
-  margin-bottom: 18px;
-  text-transform: uppercase;
-}
-.m-bio {
-  font-size: 13px;
+  font-size: 11px;
+  letter-spacing: .12em;
   color: var(--fg-dim);
-  line-height: 1.8;
+  transition: color .3s ease;
+}
+.member-x:hover .mx-handle { color: var(--fg); }
+.mx-handle svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
 }
 
 /* スタガー */
-.member-grid .member:nth-child(1) { --delay: 0s; }
-.member-grid .member:nth-child(2) { --delay: .1s; }
-.member-grid .member:nth-child(3) { --delay: .2s; }
-.member-grid .member:nth-child(4) { --delay: .3s; }
+.member-grid .member-x:nth-child(1) { --delay: 0s; }
+.member-grid .member-x:nth-child(2) { --delay: .1s; }
+.member-grid .member-x:nth-child(3) { --delay: .2s; }
+.member-grid .member-x:nth-child(4) { --delay: .3s; }
 
 /* ============== CONTACT ============== */
 .contact { background: transparent; }
@@ -816,4 +854,80 @@ ul, ol { list-style: none; }
   .contact-lead { font-size: 17px; }
   .contact-card { padding: 36px 24px 28px; }
   .contact-card::before { left: 24px; right: 24px; }
+}
+
+/* ============================================================
+   最新HTML/CSS（2026）— text-wrap で改行を最適化
+   全ブラウザ対応。崩れリスクなしのドロップイン改善。
+   ============================================================ */
+.hero-title,
+.section-title,
+.hero-sub,
+.result h3,
+.mx-name { text-wrap: balance; }   /* 見出しの改行を均等配分 */
+
+.about-grid p,
+.contact-lead,
+.r-desc,
+.tl-body p,
+.m-bio { text-wrap: pretty; }        /* 本文の孤立行（最終行1単語など）を防ぐ */
+
+/* ============================================================
+   最新HTML/CSS（2026）— スクロール駆動アニメーション
+   ★ 対応ブラウザ（Chrome / Edge 等）でのみ有効化し、
+     進捗バー・Reveal・パララックス・オーナメントの
+     スクロール処理を JS から CSS へ移譲する。
+   ★ 非対応ブラウザ（Safari / Firefox 等）はこのブロックを
+     丸ごと無視するため、従来どおり script.js が動作する。
+     （script.js 側でも対応判定し、二重処理を防いでいる）
+   ============================================================ */
+@supports (animation-timeline: scroll()) {
+
+  /* --- 進捗バー：ページ全体のスクロール量に連動 --- */
+  .progress-bar {
+    width: 100%;
+    transform-origin: 0 50%;
+    scale: 0 1;
+    animation: sd-progress linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes sd-progress { to { scale: 1 1; } }
+
+  /* --- Reveal：各要素がビューポートに入った量に連動 --- */
+  .reveal {
+    opacity: 0;
+    animation: sd-reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 6% cover 28%;
+  }
+  .reveal-up    { animation-name: sd-reveal-up; }
+  .reveal-left  { animation-name: sd-reveal-left; }
+  .reveal-right { animation-name: sd-reveal-right; }
+  @keyframes sd-reveal-up    { from { opacity: 0; transform: translateY(40px); }  to { opacity: 1; transform: none; } }
+  @keyframes sd-reveal-left  { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+  @keyframes sd-reveal-right { from { opacity: 0; transform: translateX(40px); }  to { opacity: 1; transform: none; } }
+
+  /* --- ヒーロー背景グリッド：パララックス（ゆっくり下へ流れる） --- */
+  .grid-bg {
+    animation: sd-parallax linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 100vh;
+  }
+  @keyframes sd-parallax { to { transform: translateY(120px); } }
+
+  /* --- オーナメント：スクロールで回転・縮小・フェード --- */
+  .ornament {
+    animation: sd-ornament linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 900px;
+  }
+  @keyframes sd-ornament {
+    to { transform: rotate(27deg) scale(.65); opacity: .3; }
+  }
+
+  /* 動きを抑える設定の人には即時表示（スクロール演出を無効化） */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; animation: none; }
+    .progress-bar, .grid-bg, .ornament { animation: none; }
+  }
 }

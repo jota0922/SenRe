@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SenRe — Modern HTML Demo / 最新HTML試作</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+JP:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+/* ===== 本サイトと共通のトークン ===== */
+:root{
+  --bg-0:#f7f9fc; --bg-1:#eef1f6; --bg-2:#ffffff;
+  --fg:#1a1c22; --fg-soft:#2a2d35; --fg-dim:#767a85;
+  --accent:#9aa3b2; --accent-2:#5a6172;
+  --line:rgba(26,28,34,.10); --line-soft:rgba(26,28,34,.05);
+  --serif:"Cormorant Garamond","Noto Serif JP",Georgia,serif;
+  --sans:"Inter","Hiragino Sans","Yu Gothic",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+
+/* ★ 最新: height:auto などキーワードへもアニメーション可能にする */
+:root{ interpolate-size: allow-keywords; }
+
+html{ scroll-behavior:smooth; }
+body{
+  font-family:var(--sans);font-weight:300;color:var(--fg);background:var(--bg-0);
+  line-height:1.7;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 15%,rgba(180,200,225,.18),transparent 55%),
+    radial-gradient(ellipse at 85% 80%,rgba(200,190,220,.14),transparent 60%);
+}
+.wrap{max-width:1100px;margin:0 auto;padding:80px 48px 140px;}
+.demo-head{margin-bottom:80px;}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;}
+.demo-head h1{font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(48px,9vw,110px);letter-spacing:-.02em;line-height:1;margin:14px 0 18px;
+  /* ★ 最新: 見出しの改行を自動でキレイに分配 */
+  text-wrap:balance;}
+.demo-head p{color:var(--fg-dim);max-width:560px;
+  /* ★ 最新: 本文の改行最適化（孤立行を防ぐ） */
+  text-wrap:pretty;}
+
+/* セクション共通 */
+.demo{padding:70px 0;border-top:1px solid var(--line);}
+.demo-no{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;}
+.demo h2{font-family:var(--serif);font-weight:400;font-size:clamp(30px,5vw,52px);letter-spacing:-.01em;margin:10px 0 6px;text-wrap:balance;}
+.demo .lead{color:var(--fg-dim);font-size:14px;margin-bottom:40px;max-width:640px;text-wrap:pretty;}
+.demo .lead b{color:var(--fg-soft);font-weight:500;}
+.demo .lead code{font-family:var(--mono);font-size:12px;background:var(--bg-1);padding:1px 6px;border:1px solid var(--line-soft);color:var(--accent-2);}
+.stage{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;}
+
+/* バッジ（対応状況など） */
+.badge{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--accent-2);border:1px solid var(--line);
+  padding:3px 9px;border-radius:99px;margin-left:10px;vertical-align:middle;}
+
+/* ボタン共通 */
+.btn{
+  display:inline-block;background:transparent;border:1px solid var(--line);
+  padding:14px 26px;font-family:var(--mono);font-size:11px;letter-spacing:.3em;
+  color:var(--fg-soft);text-transform:uppercase;cursor:pointer;
+  transition:border-color .25s,color .25s,background .25s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-2);}
+
+/* カード（共通の見た目） */
+.card{
+  background:var(--bg-2);border:1px solid var(--line);padding:32px 28px;position:relative;
+}
+.card .c-no{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--fg-dim);text-transform:uppercase;margin:0 0 14px;}
+.card h3{font-family:var(--serif);font-weight:500;font-size:24px;margin-bottom:8px;}
+.card p{font-size:13px;color:var(--fg-dim);}
+
+/* ============================================================
+   ① スクロール駆動アニメーション（CSSのみ・JS不要）
+   ============================================================ */
+/* 上部の読み進めバー: ページのスクロール量に連動 */
+.scroll-progress{
+  position:fixed;top:0;left:0;height:3px;width:100%;z-index:9999;transform-origin:0 50%;
+  background:linear-gradient(90deg,var(--accent-2),var(--accent));
+  scale:0 1;
+  animation:progressGrow linear both;
+  animation-timeline:scroll(root);
+}
+@keyframes progressGrow{ to{ scale:1 1; } }
+
+/* 要素が「ビューポートに入った量」に連動して出現 */
+.reveal{
+  animation:revealIn linear both;
+  animation-timeline:view();
+  animation-range:entry 5% cover 32%;
+}
+@keyframes revealIn{
+  from{ opacity:0; transform:translateY(40px) scale(.96); filter:blur(6px); }
+  to  { opacity:1; transform:none; filter:none; }
+}
+.reveal-row{display:flex;gap:24px;flex-wrap:wrap;}
+.reveal-row .card{flex:1;min-width:240px;}
+
+/* ============================================================
+   ② Popover API + アンカー・ポジショニング（ほぼJS不要）
+   ============================================================ */
+.pop-row{display:flex;gap:24px;flex-wrap:wrap;align-items:center;}
+.info-btn{anchor-name:--info;}        /* このボタンをアンカーに */
+.menu-btn{anchor-name:--menu;}
+
+[popover]{
+  margin:0;border:1px solid var(--line);background:var(--bg-2);
+  padding:18px 20px;max-width:280px;box-shadow:0 24px 60px rgba(29,27,24,.14);
+  /* ★ 出現アニメ: 表示前の初期状態を @starting-style で定義 */
+  opacity:1;transform:translateY(0);
+  transition:opacity .22s ease, transform .22s cubic-bezier(.2,.7,.2,1), overlay .22s allow-discrete, display .22s allow-discrete;
+}
+[popover]:not(:popover-open){opacity:0;transform:translateY(8px);}
+@starting-style{ [popover]:popover-open{opacity:0;transform:translateY(8px);} }
+
+#infoCard{
+  position-anchor:--info;
+  top:anchor(bottom);left:anchor(left);margin-top:10px;
+  position-try-fallbacks:flip-block, flip-inline;   /* 画面端では自動反転 */
+}
+#infoCard h4{font-family:var(--serif);font-weight:500;font-size:20px;margin-bottom:6px;}
+#infoCard p{font-size:12.5px;color:var(--fg-dim);}
+
+#dropMenu{
+  position-anchor:--menu;
+  top:anchor(bottom);right:anchor(right);margin-top:10px;
+  padding:8px;min-width:200px;
+}
+#dropMenu a{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--fg-soft);text-decoration:none;padding:10px 12px;
+  transition:background .2s,color .2s;}
+#dropMenu a:hover{background:var(--bg-1);color:var(--accent-2);}
+
+/* ============================================================
+   ③ 排他アコーディオン <details name> + :has() + 高さアニメ
+   ============================================================ */
+.faq{max-width:640px;}
+.faq details{border:1px solid var(--line);background:var(--bg-2);margin-bottom:12px;
+  transition:border-color .25s;}
+/* ★ :has() — 開いているdetailsの親(.faqの子)の見た目を変える */
+.faq details:has(>summary):hover{border-color:var(--accent);}
+.faq details[open]{border-color:var(--accent-2);}
+.faq summary{list-style:none;cursor:pointer;padding:20px 24px;
+  font-family:var(--serif);font-size:21px;font-weight:500;
+  display:flex;justify-content:space-between;align-items:center;}
+.faq summary::-webkit-details-marker{display:none;}
+.faq summary::after{content:"+";font-family:var(--mono);font-size:22px;color:var(--accent);
+  transition:transform .3s ease;}
+.faq details[open] summary::after{transform:rotate(45deg);}
+/* ★ interpolate-size により height:auto へ滑らかに開閉 */
+.faq .body{height:0;overflow:hidden;transition:height .3s ease, padding .3s ease;padding:0 24px;}
+.faq details[open] .body{height:auto;padding:0 24px 22px;}
+.faq .body p{font-size:13.5px;color:var(--fg-dim);}
+
+/* ============================================================
+   ④ コンテナクエリ（親の幅で出し分け・レスポンシブ部品）
+   ============================================================ */
+.cq-resize{
+  resize:horizontal;overflow:auto;min-width:260px;max-width:100%;width:560px;
+  border:1px dashed var(--accent);padding:14px;background:var(--bg-1);
+}
+.cq-resize::after{content:"⇿ 右下をドラッグして幅を変える";display:block;
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--fg-dim);
+  text-transform:uppercase;margin-top:10px;text-align:right;}
+.cq-card{container-type:inline-size;}
+.cq-inner{display:flex;gap:20px;background:var(--bg-2);border:1px solid var(--line);padding:24px;}
+.cq-inner .thumb{flex:0 0 110px;height:110px;background:
+  repeating-linear-gradient(135deg,var(--bg-1) 0 8px,var(--bg-2) 8px 16px);
+  border:1px solid var(--line);}
+.cq-inner h3{font-family:var(--serif);font-weight:500;font-size:24px;margin-bottom:6px;}
+.cq-inner p{font-size:13px;color:var(--fg-dim);}
+.cq-inner .tag{font-family:var(--mono);font-size:10px;letter-spacing:.25em;
+  color:var(--accent);text-transform:uppercase;}
+/* ★ @container — 「親」が狭くなったら縦積みに切り替え */
+@container (max-width: 420px){
+  .cq-inner{flex-direction:column;}
+  .cq-inner .thumb{flex-basis:auto;width:100%;height:80px;}
+}
+
+/* ============================================================
+   ⑤ View Transitions（レイアウト切替を“ぬるっ”と）
+   ============================================================ */
+.vt-controls{margin-bottom:20px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.vt-grid{display:grid;gap:18px;grid-template-columns:repeat(3,1fr);}
+.vt-grid.is-list{grid-template-columns:1fr;}
+.vt-item{background:var(--bg-2);border:1px solid var(--line);padding:22px;
+  display:flex;gap:18px;align-items:center;}
+.vt-grid:not(.is-list) .vt-item{flex-direction:column;text-align:center;}
+.vt-item .av{width:52px;height:52px;border-radius:50%;flex:0 0 52px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));}
+.vt-item h3{font-family:var(--serif);font-weight:500;font-size:20px;}
+.vt-item span{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--fg-dim);text-transform:uppercase;}
+/* 各アイテムに固有名を振ると、要素が“移動”してくれる */
+.vt-item.a{view-transition-name:vt-a;}
+.vt-item.b{view-transition-name:vt-b;}
+.vt-item.c{view-transition-name:vt-c;}
+.vt-item.d{view-transition-name:vt-d;}
+.vt-item.e{view-transition-name:vt-e;}
+.vt-item.f{view-transition-name:vt-f;}
+::view-transition-group(*){animation-duration:.4s;}
+
+/* ============================================================
+   ⑥ field-sizing（入力に合わせて伸びるtextarea）
+   ============================================================ */
+.fs-box{max-width:520px;}
+.fs-box textarea{
+  width:100%;font-family:var(--sans);font-size:14px;color:var(--fg);
+  background:var(--bg-2);border:1px solid var(--line);padding:16px 18px;
+  line-height:1.6;resize:none;
+  field-sizing:content;min-height:3lh;max-height:14lh;   /* ★ 入力量で自動リサイズ */
+}
+.fs-box textarea:focus{outline:none;border-color:var(--accent-2);}
+
+.foot{margin-top:80px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--fg-dim);text-transform:uppercase;border-top:1px solid var(--line);padding-top:30px;text-wrap:pretty;}
+
+/* 動きを抑える設定の人には控えめに */
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ① スクロール進捗バー（CSSのみ） -->
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <header class="demo-head">
+    <span class="kicker">// SENRE — MODERN HTML / CSS 2026</span>
+    <h1>New Tech</h1>
+    <p>ここ1〜2年で主要ブラウザに載った最新のHTML/CSS機能だけを、本サイトと同じ世界観で試作しました。ほとんどが <b>JSほぼ不要</b> で動きます。気に入ったものを教えてください。</p>
+  </header>
+
+  <!-- ① スクロール駆動アニメーション -->
+  <section class="demo">
+    <span class="demo-no">/ 01</span>
+    <h2>Scroll-driven Animation <span class="badge">CSS only</span></h2>
+    <p class="lead">上部の<b>進捗バー</b>はページのスクロール量に、下のカードは<b>各自が画面に入った量</b>に連動します。今までJS必須だった演出が <code>animation-timeline: scroll() / view()</code> だけで完結。スクロールして確認してください。</p>
+    <div class="reveal-row">
+      <div class="card reveal"><div class="c-no">Reveal 01</div><h3>Fade &amp; Lift</h3><p>ビューに入ると、ぼかし＋せり上がりで出現します。</p></div>
+      <div class="card reveal"><div class="c-no">Reveal 02</div><h3>Per-element</h3><p>各要素が個別のタイムラインで動きます。</p></div>
+      <div class="card reveal"><div class="c-no">Reveal 03</div><h3>No JS</h3><p>IntersectionObserverすら不要になりました。</p></div>
+    </div>
+  </section>
+
+  <!-- ② Popover + Anchor Positioning -->
+  <section class="demo">
+    <span class="demo-no">/ 02</span>
+    <h2>Popover API + Anchor <span class="badge">almost no JS</span></h2>
+    <p class="lead"><code>popover</code> 属性と <code>anchor()</code> だけで、ボタンに張り付くツールチップ／ドロップダウンが作れます。トップレイヤー表示・外側クリックで自動クローズ・<b>画面端では自動反転</b>。ライブラリ不要です。</p>
+    <div class="pop-row">
+      <button class="btn info-btn" popovertarget="infoCard">ⓘ Info</button>
+      <button class="btn menu-btn" popovertarget="dropMenu">Menu ▾</button>
+
+      <div id="infoCard" popover>
+        <h4>Anchored Tooltip</h4>
+        <p>このカードは Info ボタンの真下にアンカー配置されています。位置計算のJSは一切ありません。</p>
+      </div>
+      <div id="dropMenu" popover>
+        <a href="#">View Profile</a>
+        <a href="#">Tournaments</a>
+        <a href="#">Settings</a>
+        <a href="#">Sign Out</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 排他アコーディオン -->
+  <section class="demo">
+    <span class="demo-no">/ 03</span>
+    <h2>Exclusive Accordion <span class="badge">HTML only</span></h2>
+    <p class="lead"><code>&lt;details name="faq"&gt;</code> と <b>名前を揃える</b>だけで、片方を開くともう片方が自動で閉じる排他アコーディオンに。開閉の高さアニメは <code>interpolate-size</code> で滑らかに。JSゼロのFAQです。</p>
+    <div class="faq">
+      <details name="faq" open>
+        <summary>SenReとは？</summary>
+        <div class="body"><p>エイム系コミュニティの大会・ランキングプラットフォームの試作です。このFAQ自体がHTMLだけで動いています。</p></div>
+      </details>
+      <details name="faq">
+        <summary>参加方法は？</summary>
+        <div class="body"><p>この項目を開くと、上の項目が自動で閉じたはずです。<code>name</code>属性を共有しているためです。</p></div>
+      </details>
+      <details name="faq">
+        <summary>費用はかかる？</summary>
+        <div class="body"><p>無料です。開閉のアニメーションは <code>height:auto</code> へ補間できる最新CSSで実現しています。</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ④ コンテナクエリ -->
+  <section class="demo">
+    <span class="demo-no">/ 04</span>
+    <h2>Container Queries <span class="badge">CSS only</span></h2>
+    <p class="lead">画面幅ではなく<b>「親要素の幅」</b>でレイアウトを切り替えます。<code>@container</code> によって、同じ部品をサイドバーでも本文でも最適表示。下のボックスの<b>右下をドラッグ</b>して幅を狭めると、横並びが縦積みに変わります。</p>
+    <div class="cq-resize">
+      <div class="cq-card">
+        <div class="cq-inner">
+          <div class="thumb"></div>
+          <div>
+            <span class="tag">Tournament</span>
+            <h3>Autumn Open #4</h3>
+            <p>親が狭くなると自動で縦レイアウトへ。メディアクエリでは難しい「部品単位」の応答性です。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ View Transitions -->
+  <section class="demo">
+    <span class="demo-no">/ 05</span>
+    <h2>View Transitions <span class="badge">1 line trigger</span></h2>
+    <p class="lead">レイアウト切替を“ぬるっ”と補間。各アイテムに <code>view-transition-name</code> を振ると、グリッド⇄リストの間で要素が<b>移動アニメ</b>します。SPA風の演出が <code>document.startViewTransition()</code> 1行で。</p>
+    <div class="vt-controls">
+      <button class="btn" id="vtToggle">⊞ / ☰  Toggle Layout</button>
+    </div>
+    <div class="vt-grid" id="vtGrid">
+      <div class="vt-item a"><div class="av"></div><div><h3>Aoi</h3><span>Rank S</span></div></div>
+      <div class="vt-item b"><div class="av"></div><div><h3>Ken</h3><span>Rank A</span></div></div>
+      <div class="vt-item c"><div class="av"></div><div><h3>Mio</h3><span>Rank A</span></div></div>
+      <div class="vt-item d"><div class="av"></div><div><h3>Rei</h3><span>Rank B</span></div></div>
+      <div class="vt-item e"><div class="av"></div><div><h3>Sho</h3><span>Rank B</span></div></div>
+      <div class="vt-item f"><div class="av"></div><div><h3>Yua</h3><span>Rank C</span></div></div>
+    </div>
+  </section>
+
+  <!-- ⑥ field-sizing -->
+  <section class="demo">
+    <span class="demo-no">/ 06</span>
+    <h2>Auto-grow Textarea <span class="badge">CSS only</span></h2>
+    <p class="lead"><code>field-sizing: content</code> を付けるだけで、入力量に合わせて<b>textareaが自動で伸縮</b>します。今まで定番だった「高さ計算JS」がもう要りません。下に打ち込んでみてください。</p>
+    <div class="fs-box">
+      <textarea placeholder="ここに入力すると、行数に応じて高さが自動で変わります…">SenRe へようこそ。
+この欄は入力に合わせて自動で伸びます。</textarea>
+    </div>
+  </section>
+
+  <p class="foot">© 2026 SenRe — Modern HTML Prototype. お好みの番号（複数可）を教えてください。本番（index.html）へ統合します。<br>※ 一部機能は最新版の Chrome / Edge 向けです（Safari / Firefox では一部フォールバック表示になります）。</p>
+
+</div>
+
+<script>
+/* ============================================================
+   ⑤ View Transitions — レイアウト切替を補間
+   （非対応ブラウザでは通常切替にフォールバック）
+   ============================================================ */
+const vtGrid = document.getElementById('vtGrid');
+document.getElementById('vtToggle').addEventListener('click', ()=>{
+  const apply = ()=> vtGrid.classList.toggle('is-list');
+  if(document.startViewTransition){
+    document.startViewTransition(apply);
+  } else {
+    apply(); // フォールバック
+  }
+});
+
+/* それ以外（①〜④・⑥）は CSS / HTML だけで動作しています */
+</script>
+</body>
+</html>

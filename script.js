@@ -1,4 +1,13 @@
 // =========================================
+// 0. スクロール駆動アニメーション対応判定
+//    対応ブラウザでは進捗バー・パララックス・オーナメント・
+//    Reveal を CSS（@supports）側に任せ、JSは二重処理しない。
+//    非対応ブラウザ（Safari / Firefox 等）では従来どおりJSで動かす。
+// =========================================
+const SUPPORTS_SCROLL_TIMELINE =
+  window.CSS && CSS.supports && CSS.supports('animation-timeline: scroll()');
+
+// =========================================
 // 1. 進捗バー
 // =========================================
 const progressBar = document.getElementById('progressBar');
@@ -50,15 +59,18 @@ function updateHero() {
 // =========================================
 // 5. Reveal : Intersection Observer
 // =========================================
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('in-view');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.15 });
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+// 対応ブラウザでは CSS の animation-timeline: view() が担当するため不要
+if (!SUPPORTS_SCROLL_TIMELINE) {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+}
 
 // =========================================
 // 6. セクションごとに body 背景色を切替
@@ -105,11 +117,14 @@ let ticking = false;
 function onScroll() {
   if (!ticking) {
     requestAnimationFrame(() => {
-      updateProgress();
-      updateParallax();
-      updateOrnament();
-      updateHero();
-      updatePin();
+      // 進捗バー・パララックス・オーナメントは対応ブラウザでは CSS が担当
+      if (!SUPPORTS_SCROLL_TIMELINE) {
+        updateProgress();
+        updateParallax();
+        updateOrnament();
+      }
+      updateHero();  // ヒーローの縮小は導入アニメと整合させるため常にJSで処理
+      updatePin();   // 横スクロール（sticky pin）は対象外
       ticking = false;
     });
     ticking = true;
